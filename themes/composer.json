@@ -1,0 +1,8 @@
+{
+    "require": {
+        "guzzlehttp/guzzle": "^8.0",
+        "doctrine/dbal": "^4.4",
+        "doctrine/migrations": "^3.9",
+        "slim/slim": "^4.15"
+    }
+}
