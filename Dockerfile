@@ -16,6 +16,7 @@ RUN apt update && apt install -y --no-install-recommends \
     tzdata \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-install pdo pdo_mysql
 ENV TZ=Europe/Warsaw
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ >/etc/timezone

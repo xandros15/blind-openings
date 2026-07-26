@@ -4,8 +4,31 @@ services:
     image: docker.box:5000/blind-openings-php:latest
     environment:
       X_MAL_CLIENT_ID: ${X_MAL_CLIENT_ID}
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      - db
+  db:
+    restart: always
+    image: mariadb:12-noble
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: true
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASS}
+      MARIADB_DATABASE: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   web:
     restart: always
     image: docker.box:5000/blind-openings-web:latest
     ports:
       - "2137:80"
+volumes:
+  db_data:

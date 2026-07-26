@@ -22,28 +22,45 @@ function addNewTeamMate(data) {
 }
 
 async function sendTeam() {
-  if (!teamName.value || teamMates.value.length < 2) {
+  if (!teamName.value || teamMates.value.length < 1) {
     toastr.warning('Nie możesz się zapisać bez nazwy drużyny i minimum 2 członków.')
   }
 
   loading.value = true
-  // const response = await fetch('/api/lists', {
-  //   method: "POST",
-  //   body: JSON.stringify({lists: teamMates.value, name: teamName.value}),
-  //   headers: {
-  //     ContentType: 'application/json'
-  //   }
-  // })
-  // if (!response.ok) {
-  //   locked.value =
-  //   toastr.error('Nie udało się zapisać do konkursu')
-  //
-  //   return
-  // }
-  setTimeout(() => {
-    toastr.success('Zostaliście zapisani do konkursu')
+  //normalize ids
+  const lists = teamMates.value.map(mate => {
+    mate.items = mate.items.map(anime => {
+      anime.id = parseInt(anime.id)
+      return anime
+    })
+    return mate
+  });
+
+  const response = await fetch('/api/lists', {
+    method: "POST",
+    body: JSON.stringify({lists, name: teamName.value}),
+    headers: {
+      ContentType: 'application/json'
+    }
+  }).catch(e => {
+    toastr.error('Nieoczekiwany błąd: ' + e)
     loading.value = false
-  }, 3000)
+  })
+  if (!response.ok) {
+    try {
+      const payload = await response.json();
+      if (payload.error) {
+        toastr.error(payload.error)
+      } else {
+        toastr.error('Nie udało się zapisać do konkursu')
+      }
+    } catch {
+      toastr.error('Nie udało się zapisać do konkursu')
+    }
+  } else {
+    toastr.success('Zostaliście zapisani do konkursu')
+  }
+  loading.value = false
 }
 </script>
 
@@ -69,7 +86,7 @@ async function sendTeam() {
         <div class="mb-2">
           <div class="has-text-info">Do wysłania zgłoszenia potrzebujesz minimum 2 uczestników (i nazwy drużyny)</div>
           <button class="is-link button" :class="{'is-loading': loading}"
-                  :disabled="teamMates.length < 2 || teamName.length <= 0 || loading">
+                  :disabled="teamMates.length < 1 || teamName.length <= 0 || loading">
             Zgłoś
           </button>
         </div>

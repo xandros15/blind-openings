@@ -1,6 +1,9 @@
 {
     "require": {
         "slim/slim": "^4.15",
-        "guzzlehttp/psr7": "^3.0"
+        "guzzlehttp/psr7": "^3.0",
+        "ramsey/uuid": "^4.9",
+        "doctrine/migrations": "^3.9",
+        "opis/json-schema": "^2.6"
     }
 }

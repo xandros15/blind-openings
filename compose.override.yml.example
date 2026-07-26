@@ -2,3 +2,6 @@ services:
   php:
     volumes:
       - ./list-request/api:/app
+  db:
+    ports:
+      - "3306:3306"

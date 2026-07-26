@@ -17,10 +17,11 @@ Następnie:
 make build
 ```
 
-## Wystartowanie z docker compose ##
+## Wystartowanie z docker compose + migracja ##
 
 ```
 docker compose up -d
+docker compose exec php php vendor/bin/doctrine-migrations migrations:migrate
 ```
 
 ## dev frontend ##
