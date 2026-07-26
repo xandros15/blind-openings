@@ -1,7 +1,10 @@
 <template>
   <div v-if="items.length > 0" class="mb-5">
     <h3 class="is-size-3">
-      <span>Lista {{ name }} ({{items.length}} animców) <code>{{service}}</code></span>
+      <button class="mr-2 button is-small is-danger"
+              @click="confirm('Czy na pewno chcesz usunąć liste ' + name) && $emit('remove')">Usuń</button>
+      <span class="mr-2">Lista {{ name }} ({{ items.length }} animców)</span>
+      <span class="tag is-info">{{ service }}</span>
     </h3>
     <div class="mb-1">
       <button class="button is-small is-info" @click="toggle">
@@ -24,6 +27,7 @@ export default {
     items: {type: Array, required: true},
     name: {type: String, required: true},
   },
+  emits: ['remove'],
   data() {
     return {
       tempName: '',
@@ -35,6 +39,9 @@ export default {
     toggle() {
       this.isHidden = !this.isHidden
     },
+    confirm(text) {
+      return confirm(text)
+    }
   }
 }
 </script>

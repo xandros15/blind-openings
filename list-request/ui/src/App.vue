@@ -46,6 +46,10 @@ function serviceFactory(type, data) {
   }
 }
 
+function removeTeamMate(name, service) {
+  teamMates.value = teamMates.value.filter(mate => mate.service !== service || mate.name !== name)
+  toastr.success('Usunięto liste ' + name)
+}
 
 async function addTeamMate() {
   loading.value = true
@@ -65,6 +69,7 @@ async function addTeamMate() {
   }
 
   teamMates.value.push({service: mateService, ...response})
+  toastr.success('Dodano liste ' + response.name)
   file.value = null
   teamMateName.value = ''
   service.value = null
@@ -94,7 +99,9 @@ async function addTeamMate() {
   <section class="section" v-if="teamMates.length > 0">
     <div class="content">
       <h2 class="is-size-2">Listy:</h2>
-      <AnimeList v-for="mate in teamMates" :service="mate.service" :name="mate.name" :items="mate.items"/>
+      <AnimeList v-for="mate in teamMates" :service="mate.service" :name="mate.name" :items="mate.items"
+                 @remove="removeTeamMate(mate.name, mate.service)"
+      />
     </div>
   </section>
   <CustomModal ref="modal" title="Teammate">

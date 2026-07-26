@@ -30,7 +30,6 @@ export const malApi = async name => {
             return r
         }
         if (r && r.length > 0) {
-            toastr.success('Imported MyAnimeList list from api')
             return r
         } else {
             toastr.warning('Lista jest pusta')
