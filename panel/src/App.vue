@@ -7,6 +7,7 @@ const rolledThemes = ref([])
 const chooseTeam = ref(null)
 const chooseAccount = ref(null)
 const chooseTheme = ref(null)
+const loading = ref(false)
 
 fetch('/api/teams').then(async r => {
   if (r.ok) {
@@ -62,15 +63,27 @@ async function rollTheme() {
   }).then(r => r.ok ? r.json() : []))
 }
 
+async function downloadListsFromForm() {
+  loading.value = true
+  await fetch('/api/lists', {
+    method: 'POST'
+  })
+  await fetch('/api/teams').then(async r => {
+    if (r.ok) {
+      teams.value = await r.json()
+    }
+  })
+  loading.value = false
+}
+
 </script>
 
 <template>
   <div class="section">
     <div class="container">
       <h1 class="title is-size-1">Panel</h1>
-
       <div class="box" v-if="chooseTheme">
-        <h2 class="title is-size-2">Wideo {{chooseTheme.name}} {{ /OP\d+(?:v\d+)?/.exec(chooseTheme.path)?.[0] }}</h2>
+        <h2 class="title is-size-2">Wideo {{ chooseTheme.name }} {{ /OP\d+(?:v\d+)?/.exec(chooseTheme.path)?.[0] }}</h2>
         <video controls muted>
           <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
           Twoja przeglądarka nie obsługuje elementu video.
@@ -104,7 +117,6 @@ async function rollTheme() {
           </div>
         </div>
       </div>
-
       <div class="box" v-if="chooseTeam">
         <h2 class="title is-size-2">Wybierz uczestnika z {{ chooseTeam.team_name }}</h2>
         <div class="buttons" v-if="chooseAccount === null">
@@ -124,8 +136,6 @@ async function rollTheme() {
           <button class="button is-success" @click="rollTheme">Wylosuj</button>
         </div>
       </div>
-
-
       <div v-for="team in teams" :key="team.id" class="box">
         <h2 class="title is-size-2">{{ team.team_name }}</h2>
         <div class="mb-2" v-for="list in team.lists" :key="list.id">
@@ -133,6 +143,12 @@ async function rollTheme() {
           <span class="tag is-info">{{ list.service }}</span>
         </div>
         <button class="button is-success" @click.prevent="switchTeam(team)">Wybierz</button>
+      </div>
+      <div class="box">
+        <button class="button is-success" :class="{'is-loading': loading}" @click.prevent="downloadListsFromForm"
+                :disabled="loading">
+          Pobierz listy z formularza
+        </button>
       </div>
     </div>
   </div>
