@@ -80,7 +80,7 @@ async function addTeamMate() {
 <template>
   <Notifications/>
   <div class="section">
-    <h1 class="is-size-1">Formularz drużynowy</h1>
+    <h1 class="is-size-1">Zgłoś drużynę</h1>
     <form @submit="() => {}">
       <div class="field">
         <label class="label" for="teamName">Nazwa drużyny</label>
@@ -92,7 +92,8 @@ async function addTeamMate() {
         <button type="button" class="is-link button" @click="$refs.modal.open()">Dodaj uczestnika</button>
       </div>
       <div class="mb-2">
-        <button class="is-link button">Zgłoś</button>
+        <div class="has-text-info">Do wysłania zgłoszenia potrzebujesz minimum 2 uczestników</div>
+        <button class="is-link button" :disabled="teamMates.length < 2">Zgłoś</button>
       </div>
     </form>
   </div>
@@ -108,7 +109,8 @@ async function addTeamMate() {
     <form @submit.prevent="addTeamMate">
       <div v-if="service === 'anidb'" class="notification is-info is-light">
         By wyeksportować listę należy wejść <a target="_blank" href="https://anidb.net/user/export"
-                                               rel="nofollow">tutaj</a>, wybrać templatke xml, i zarequestować export.
+                                               rel="nofollow">tutaj</a>, wybrać templatke <code>xml</code>, i
+        zarequestować export.
         Po około 1min zostanie wysłane powiadomienie z linkiem do pobrania.
       </div>
       <div v-else-if="service === 'mal'" class="notification is-info is-light">

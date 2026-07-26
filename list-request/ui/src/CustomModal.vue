@@ -1,13 +1,14 @@
 <template>
   <div class="modal" tabindex="-1" ref="modal">
     <div class="modal-background" @click="close"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="is-size-2 modal-title">{{ title }}</h2>
+    <div class="modal-card">
+      <div class="modal-card-head">
+        <h2 class="is-size-2 modal-card-title">{{ title }}</h2>
       </div>
-      <div class="modal-body">
+      <div class="modal-card-body">
         <slot/>
       </div>
+      <div class="modal-card-foot"></div>
     </div>
     <button class="modal-close is-large" aria-label="close" @click="close"></button>
   </div>
