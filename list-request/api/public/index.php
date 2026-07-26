@@ -230,7 +230,7 @@ $app->get('/lists', function (Request $request, Response $response) {
     $lists = $db->fetchAllAssociative($query);
     $grouped = [];
     foreach ($lists as $list) {
-        $grouped[$list['id']][] = $list;
+        $grouped[$list['team_id']][] = $list;
     }
     $grouped = array_values($grouped);
     $response->getBody()->write(\json_encode($grouped));
@@ -259,6 +259,17 @@ $app->get('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4
     $response->getBody()->write(\json_encode($list));
 
     return $response;
+});
+
+
+$app->delete('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}', function (Request $request, Response $response, $args) {
+    $response = $response->withHeader('Content-Type', 'application/json');
+    $db = getDb();
+    $db->delete('team_account', [
+        'team_id' => $args['id'],
+    ]);
+
+    return $response->withStatus(204);
 });
 
 $app->addMiddleware(
