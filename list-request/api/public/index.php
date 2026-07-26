@@ -239,7 +239,7 @@ $app->get('/lists', function (Request $request, Response $response) {
         }
         $grouped[$list['team_id']]['lists'][] = [
             'id' => $list['id'],
-            'account_name' => $list['id'],
+            'account_name' => $list['account_name'],
             'service' => $list['service'],
             'anime_count' => $list['anime_count'],
         ];
