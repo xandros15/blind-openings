@@ -4,6 +4,7 @@
         "guzzlehttp/psr7": "^3.0",
         "ramsey/uuid": "^4.9",
         "doctrine/migrations": "^3.9",
-        "opis/json-schema": "^2.6"
+        "opis/json-schema": "^2.6",
+        "doctrine/dbal": "^4.4"
     }
 }
