@@ -275,7 +275,6 @@ $app->get('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4
 
 
 $app->delete('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}', function (Request $request, Response $response, $args) {
-    $response = $response->withHeader('Content-Type', 'application/json');
     $db = getDb();
     $db->delete('team_account', [
         'team_id' => $args['id'],
