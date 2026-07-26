@@ -222,7 +222,7 @@ $app->get('/lists', function (Request $request, Response $response) {
             ta.team_name, 
             ta.account_name, 
             ta.service, 
-            COUNT(a.team_account_id) animesCount 
+            COUNT(a.team_account_id) anime_count 
         FROM team_account ta
         JOIN anime a on ta.id = a.team_account_id
         GROUP BY ta.id
@@ -230,7 +230,19 @@ $app->get('/lists', function (Request $request, Response $response) {
     $lists = $db->fetchAllAssociative($query);
     $grouped = [];
     foreach ($lists as $list) {
-        $grouped[$list['team_id']][] = $list;
+        if(!isset($grouped[$list['team_id']])){
+            $grouped[$list['team_id']] = [
+                'id' => $list['team_id'],
+                'team_name' => $list['team_name'],
+                'lists' => [],
+            ];
+        }
+        $grouped[$list['team_id']]['lists'][] = [
+            'id' => $list['id'],
+            'account_name' => $list['id'],
+            'service' => $list['service'],
+            'anime_count' => $list['anime_count'],
+        ];
     }
     $grouped = array_values($grouped);
     $response->getBody()->write(\json_encode($grouped));
