@@ -1,0 +1,22 @@
+{
+    auto_https off
+}
+
+:80 {
+    log {
+        output stdout
+        format console
+    }
+
+    handle_path /api/* {
+        root * /app/public
+        try_files {path} /index.php
+        php_fastcgi php:9000
+    }
+
+    handle {
+        root * /app
+        try_files {path} /index.html
+        file_server
+    }
+}

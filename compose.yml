@@ -1,0 +1,11 @@
+services:
+  php:
+    restart: always
+    image: docker.box:5000/blind-openings-php:latest
+    environment:
+      X_MAL_CLIENT_ID: ${X_MAL_CLIENT_ID}
+  web:
+    restart: always
+    image: docker.box:5000/blind-openings-web:latest
+    ports:
+      - "2137:80"

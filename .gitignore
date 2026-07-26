@@ -1,0 +1,11 @@
+vendor
+node_modules
+logs
+.idea
+.vscode
+.github
+composer.phar
+.phpunit.result.cache
+var
+.env
+compose.override.yml
