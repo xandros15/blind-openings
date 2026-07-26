@@ -102,7 +102,7 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
     }
 
     $query = <<<SQL
-        SELECT DISTINCT t.id, t.name, t.paths, ta.account_name AS accountName
+        SELECT DISTINCT t.id, t.name, t.paths, ta.account_name AS accountName, a.image, a.url, t.year
         FROM theme t
         JOIN resource r on t.id = r.theme_id
         JOIN anime a on a.external_id = r.external_id
@@ -113,13 +113,21 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
         $query .= ' AND t.id NOT IN (:excludeIds)';
     }
 
-    $response->getBody()->write(\json_encode(getDb()->fetchAllAssociative($query, [
+    $themes = getDb()->fetchAllAssociative($query, [
         'listIds' => $listIds,
         'excludeIds' => $excludedIds,
     ], [
         'listIds' => ArrayParameterType::STRING,
         'excludeIds' => ArrayParameterType::INTEGER,
-    ])));
+    ]);
+
+    $response->getBody()->write(
+        \json_encode(
+            array_map(static function (array $theme) {
+                return [...$theme, 'paths' => explode(',', $theme['paths'])];
+            }, $themes)
+        )
+    );
 
 
     return $response;

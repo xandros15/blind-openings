@@ -6,6 +6,7 @@ const doneThemes = ref([])
 const rolledThemes = ref([])
 const chooseTeam = ref(null)
 const chooseAccount = ref(null)
+const chooseTheme = ref(null)
 
 fetch('/api/teams').then(async r => {
   if (r.ok) {
@@ -40,6 +41,10 @@ function getRandom(items, number = 3) {
   return results;
 }
 
+function selectVideo(theme, path) {
+  chooseTheme.value = Object.assign({}, {...theme, path})
+}
+
 async function rollTheme() {
   if (!chooseAccount.value || !chooseTeam.value) {
     return
@@ -63,9 +68,41 @@ async function rollTheme() {
   <div class="section">
     <div class="container">
       <h1 class="title is-size-1">Panel</h1>
+
+      <div class="box" v-if="chooseTheme">
+        <h2 class="title is-size-2">Wideo {{chooseTheme.name}} {{ /OP\d+(?:v\d+)?/.exec(chooseTheme.path)?.[0] }}</h2>
+        <video controls muted>
+          <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
+          Twoja przeglądarka nie obsługuje elementu video.
+        </video>
+      </div>
       <div class="box" v-if="rolledThemes.length > 0">
         <h2 class="title is-size-2">Wybierz opening</h2>
-        {{rolledThemes}}
+        <div class="columns">
+          <div class="column" v-for="theme in rolledThemes" :key="theme.id">
+            <div class="card">
+              <div class="card-image">
+                <figure class="image">
+                  <img :src="theme.image" alt="Placeholder image"/>
+                </figure>
+              </div>
+              <div class="card-content">
+                <div class="media">
+                  <div class="media-content">
+                    <p class="title is-4">{{ theme.name }}</p>
+                    <p class="subtitle is-6">{{ theme.year }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button v-for="videoPath in theme.paths" @click.prevent="selectVideo(theme, videoPath)"
+                        class="button card-footer-item" :key="videoPath">
+                  {{ /OP\d+(?:v\d+)?/.exec(videoPath)?.[0] }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="box" v-if="chooseTeam">
