@@ -1,7 +1,7 @@
 <script setup>
 import CustomModal from "@/CustomModal.vue";
 import {ref} from "vue";
-import toast from '@/tools/toastr.js'
+import toastr from '@/tools/toastr.js'
 import Notifications from "@/Notifications.vue";
 import {anidb, anilist, kitsu, mal, malApi} from '@/tools/parsers.js';
 import AnimeList from "@/AnimeList.vue";
@@ -23,10 +23,10 @@ function loadFile(e) {
 
 function serviceFactory(type, data) {
   if (['mal', 'anidb'].includes(type) && !(data instanceof File)) {
-    toast.warning('Nie został dodany plik!')
+    toastr.warning('Nie został dodany plik!')
     return false
   } else if (['malApi', 'kitsu', 'anilist'].includes(type) && (typeof data !== 'string' || data.length <= 0)) {
-    toast.warning('Nie została wpisana nazwa konta!')
+    toastr.warning('Nie została wpisana nazwa konta!')
     return false;
   }
   if (type === 'mal') {
@@ -60,7 +60,7 @@ async function addTeamMate() {
 
   const mateService = service.value === 'malApi' ? 'mal' : service.value;
   if (teamMates.value.find(tm => tm.service === mateService && tm.name === response.name)) {
-    toast.warning('Nie możesz dodać tej samej listy ponownie!')
+    toastr.warning('Nie możesz dodać tej samej listy ponownie!')
     return
   }
 
