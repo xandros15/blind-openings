@@ -3,162 +3,87 @@ import CustomModal from "@/CustomModal.vue";
 import {ref} from "vue";
 import toastr from '@/tools/toastr.js'
 import Notifications from "@/Notifications.vue";
-import {anidb, anilist, kitsu, mal, malApi} from '@/tools/parsers.js';
 import AnimeList from "@/AnimeList.vue";
+import TeamMateModal from "@/TeamMateModal.vue";
 
 const teamMates = ref([])
 const modal = ref(null)
-
-const service = ref(null)
-const file = ref(null)
-const teamMateName = ref('')
 const loading = ref(false)
-
-function loadFile(e) {
-  const files = e.target.files || e.dataTransfer.files
-  if (files.length > 0) {
-    file.value = files[0]
-  }
-}
-
-function serviceFactory(type, data) {
-  if (['mal', 'anidb'].includes(type) && !(data instanceof File)) {
-    toastr.warning('Nie został dodany plik!')
-    return false
-  } else if (['malApi', 'kitsu', 'anilist'].includes(type) && (typeof data !== 'string' || data.length <= 0)) {
-    toastr.warning('Nie została wpisana nazwa konta!')
-    return false;
-  }
-  if (type === 'mal') {
-    return mal(data)
-  }
-  if (type === 'anidb') {
-    return anidb(data)
-  }
-  if (type === 'malApi') {
-    return malApi(data)
-  }
-  if (type === 'kitsu') {
-    return kitsu(data)
-  }
-  if (type === 'anilist') {
-    return anilist(data)
-  }
-}
+const teamName = ref('')
 
 function removeTeamMate(name, service) {
   teamMates.value = teamMates.value.filter(mate => mate.service !== service || mate.name !== name)
   toastr.success('Usunięto liste ' + name)
 }
 
-async function addTeamMate() {
-  loading.value = true
-  const response = await serviceFactory(
-      service.value,
-      ['mal', 'anidb'].includes(service.value) ? file.value : teamMateName.value
-  )
-  loading.value = false
-  if (!response) {
-    return
-  }
-
-  const mateService = service.value === 'malApi' ? 'mal' : service.value;
-  if (teamMates.value.find(tm => tm.service === mateService && tm.name === response.name)) {
-    toastr.warning('Nie możesz dodać tej samej listy ponownie!')
-    return
-  }
-
-  teamMates.value.push({service: mateService, ...response})
-  toastr.success('Dodano liste ' + response.name)
-  file.value = null
-  teamMateName.value = ''
-  service.value = null
+function addNewTeamMate(data) {
+  teamMates.value.push(data)
   modal.value.close()
+}
+
+async function sendTeam() {
+  if (!teamName.value || teamMates.value.length < 2) {
+    toastr.warning('Nie możesz się zapisać bez nazwy drużyny i minimum 2 członków.')
+  }
+
+  loading.value = true
+  // const response = await fetch('/api/lists', {
+  //   method: "POST",
+  //   body: JSON.stringify({lists: teamMates.value, name: teamName.value}),
+  //   headers: {
+  //     ContentType: 'application/json'
+  //   }
+  // })
+  // if (!response.ok) {
+  //   locked.value =
+  //   toastr.error('Nie udało się zapisać do konkursu')
+  //
+  //   return
+  // }
+  setTimeout(() => {
+    toastr.success('Zostaliście zapisani do konkursu')
+    loading.value = false
+  }, 3000)
 }
 </script>
 
 <template>
   <Notifications/>
   <div class="section">
-    <h1 class="is-size-1">Zgłoś drużynę</h1>
-    <form @submit="() => {}">
-      <div class="field">
-        <label class="label" for="teamName">Nazwa drużyny</label>
-        <div class="control">
-          <input class="input" id="teamName" name="teamName" type="text">
-        </div>
-      </div>
-      <div class="mb-2">
-        <button type="button" class="is-link button" @click="$refs.modal.open()">Dodaj uczestnika</button>
-      </div>
-      <div class="mb-2">
-        <div class="has-text-info">Do wysłania zgłoszenia potrzebujesz minimum 2 uczestników</div>
-        <button class="is-link button" :disabled="teamMates.length < 2">Zgłoś</button>
-      </div>
-    </form>
-  </div>
-  <section class="section" v-if="teamMates.length > 0">
     <div class="content">
-      <h2 class="is-size-2">Listy:</h2>
-      <AnimeList v-for="mate in teamMates" :service="mate.service" :name="mate.name" :items="mate.items"
-                 @remove="removeTeamMate(mate.name, mate.service)"
-      />
-    </div>
-  </section>
-  <CustomModal ref="modal" title="Teammate">
-    <form @submit.prevent="addTeamMate">
-      <div v-if="service === 'anidb'" class="notification is-info is-light">
-        By wyeksportować listę należy wejść <a target="_blank" href="https://anidb.net/user/export"
-                                               rel="nofollow">tutaj</a>, wybrać templatke <code>xml</code>, i
-        zarequestować export.
-        Po około 1min zostanie wysłane powiadomienie z linkiem do pobrania.
-      </div>
-      <div v-else-if="service === 'mal'" class="notification is-info is-light">
-        By wyeksportować listę należy wejść <a target="_blank" href="https://myanimelist.net/panel.php?go=export"
-                                               rel="nofollow">tutaj</a>, wybrać <code>anime list</code> i zatwierdzić
-        pobranie.
-      </div>
-      <div class="field">
-        <label class="label">Serwis z listą</label>
-        <div class="control">
-          <div class="select">
-            <select :disabled="loading" v-model="service">
-              <option :value="null" disabled>Wybierz serwis</option>
-              <option value="malApi">MyAnimeList</option>
-              <option value="anilist">AniList</option>
-              <option value="kitsu">Kitsu</option>
-              <option value="anidb">Anidb</option>
-              <option value="mal">MyAnimeList (z pliku)</option>
-            </select>
+      <h1 class="is-size-1">Zgłoś drużynę</h1>
+      <form @submit.prevent="sendTeam">
+        <div class="field">
+          <label class="label" for="teamName">Nazwa drużyny</label>
+          <div class="control">
+            <input class="input" v-model="teamName" id="teamName" name="teamName" type="text" :disabled="loading"
+                   required>
           </div>
         </div>
-      </div>
-      <div v-if="['malApi', 'kitsu', 'anilist'].includes(service)" class="field">
-        <label class="label">Nazwa konta</label>
-        <div class="control">
-          <input v-model="teamMateName" :disabled="loading" class="input" type="text" placeholder="Nazwa konta">
+        <div class="mb-2">
+          <button type="button" class="is-link button" @click="$refs.modal.open()"
+                  :disabled="loading"
+          >Dodaj uczestnika
+          </button>
         </div>
-      </div>
-      <div v-if="['anidb', 'mal'].includes(service)" class="file">
-        <label class="file-label">
-          <input class="file-input" type="file" @change="loadFile" :disabled="loading" name="resume"/>
-          <span class="file-cta">
-              <span class="file-icon">
-                <i class="fas fa-upload"></i>
-              </span>
-              <span class="file-label"> {{ file ? file.name : 'Wybierz plik z listą…' }} </span>
-            </span>
-        </label>
-      </div>
-      <div class="field is-grouped">
-        <div class="control">
-          <button class="button is-link" :class="{'is-loading': loading}" :disabled="loading">Dodaj</button>
+        <div class="mb-2">
+          <div class="has-text-info">Do wysłania zgłoszenia potrzebujesz minimum 2 uczestników (i nazwy drużyny)</div>
+          <button class="is-link button" :class="{'is-loading': loading}"
+                  :disabled="teamMates.length < 2 || teamName.length <= 0 || loading">
+            Zgłoś
+          </button>
         </div>
-        <div class="control">
-          <button class="button is-link is-light" @click.prevent="$refs.modal.close()">Anuluj</button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
+    <div class="content" v-if="teamMates.length > 0">
+      <h2 class="is-size-2">Listy:</h2>
+      <AnimeList v-for="mate in teamMates" :service="mate.service" :name="mate.name" :items="mate.items"
+                 @remove="removeTeamMate(mate.name, mate.service)" :locked="loading"
+      />
+    </div>
+  </div>
+  <CustomModal ref="modal" title="Teammate">
+    <TeamMateModal @addTeamMate="addNewTeamMate" :teamMates="teamMates" @close="$refs.modal.close()"/>
   </CustomModal>
 </template>
 

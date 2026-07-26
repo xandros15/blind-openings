@@ -2,7 +2,9 @@
   <div v-if="items.length > 0" class="mb-5">
     <h3 class="is-size-3">
       <button class="mr-2 button is-small is-danger"
-              @click="confirm('Czy na pewno chcesz usunąć liste ' + name) && $emit('remove')">Usuń</button>
+              @click="confirm('Czy na pewno chcesz usunąć liste ' + name) && $emit('remove')"
+              :disabled="locked"
+      >Usuń</button>
       <span class="mr-2">Lista {{ name }} ({{ items.length }} animców)</span>
       <span class="tag is-info">{{ service }}</span>
     </h3>
@@ -25,6 +27,7 @@ export default {
   props: {
     service: {type: String, required: true},
     items: {type: Array, required: true},
+    locked: {type: Boolean, required: true},
     name: {type: String, required: true},
   },
   emits: ['remove'],
