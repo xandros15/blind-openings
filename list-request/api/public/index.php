@@ -211,6 +211,56 @@ $app->post('/lists', function (Request $request, Response $response) {
 
     return $response->withStatus(201);
 });
+
+$app->get('/lists', function (Request $request, Response $response) {
+    $response = $response->withHeader('Content-Type', 'application/json');
+    $db = getDb();
+    $query = <<<SQL
+        SELECT 
+            ta.id,
+            ta.team_id,
+            ta.team_name, 
+            ta.account_name, 
+            ta.service, 
+            COUNT(a.team_account_id) animesCount 
+        FROM team_account ta
+        JOIN anime a on ta.id = a.team_account_id
+        GROUP BY ta.id
+    SQL;
+    $lists = $db->fetchAllAssociative($query);
+    $grouped = [];
+    foreach ($lists as $list) {
+        $grouped[$list['id']][] = $list;
+    }
+    $grouped = array_values($grouped);
+    $response->getBody()->write(\json_encode($grouped));
+
+    return $response;
+});
+
+$app->get('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}', function (Request $request, Response $response, $args) {
+    $response = $response->withHeader('Content-Type', 'application/json');
+    $db = getDb();
+    $query = <<<SQL
+        SELECT 
+            a.url,
+            a.image,
+            a.name,
+            a.external_id AS id,
+            ta.service,
+            ta.account_name
+        FROM anime a
+        JOIN team_account ta on ta.id = a.team_account_id
+        WHERE a.team_account_id = :id
+    SQL;
+    $list = $db->fetchAllAssociative($query, [
+        'id' => $args['id'],
+    ]);
+    $response->getBody()->write(\json_encode($list));
+
+    return $response;
+});
+
 $app->addMiddleware(
     new class implements \Psr\Http\Server\MiddlewareInterface {
 
