@@ -102,18 +102,26 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
     }
 
     $query = <<<SQL
-        SELECT DISTINCT t.id, t.name, t.paths, ta.account_name AS accountName, a.image, a.url, t.year
+        SELECT 
+            t.id, 
+            t.name, 
+            t.paths, 
+            GROUP_CONCAT(ta.account_name, ',') AS accountNames, 
+            MAX(a.image) image,
+            t.year
         FROM theme t
         JOIN resource r on t.id = r.theme_id
         JOIN anime a on a.external_id = r.external_id
         JOIN team_account ta on a.team_account_id = ta.id AND ta.service = r.site
         WHERE ta.id IN (:listIds)
+        GROUP BY t.id
     SQL;
     if ($excludedIds !== []) {
         $query .= ' AND t.id NOT IN (:excludeIds)';
     }
 
-    $themes = getDb()->fetchAllAssociative($query, [
+    $db = getDb();
+    $themes = $db->fetchAllAssociative($query, [
         'listIds' => $listIds,
         'excludeIds' => $excludedIds,
     ], [
@@ -121,14 +129,39 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
         'excludeIds' => ArrayParameterType::INTEGER,
     ]);
 
-    $response->getBody()->write(
-        \json_encode(
-            array_map(static function (array $theme) {
-                return [...$theme, 'paths' => explode(',', $theme['paths'])];
-            }, $themes)
-        )
-    );
+    $indexes = array_column($themes, 'id');
+    $queryIndexed = <<<SQL
+        SELECT 
+            theme_id, 
+            external_id, 
+            site 
+        FROM resource 
+        WHERE theme_id IN (:ids) 
+          AND site in ('mal', 'anidb', 'ann', 'anilist')
+    SQL;
+    $grouped = [];
+    $forGroup = $db->fetchAllAssociative($queryIndexed, [
+        'ids' => $indexes,
+    ], ['ids' => ArrayParameterType::INTEGER]);
+    foreach($forGroup as $item){
+        $grouped[$item['theme_id']][] = $item;
+    }
 
+    $items = array_map(static fn(array $theme) => [
+        ...$theme,
+        'paths' => explode(',', $theme['paths']),
+        'accountNames' => explode(',', $theme['accountNames']),
+        'resources' => array_map(static fn(array $resource) => [
+            'site' => strtolower($resource['site']),
+            'link' => match (strtolower($resource['site'])) {
+                'anidb' => 'https://anidb.net/a' . $resource['external_id'],
+                'mal' => 'https://myanimelist.net/anime/' . $resource['external_id'],
+                'anilist' => 'https://anilist.co/anime/' . $resource['external_id'],
+                'ann' => 'https://www.animenewsnetwork.com/encyclopedia/anime.php?id=' . $resource['external_id'],
+            },
+        ], $grouped[$theme['id']] ?? []),
+    ], $themes);
+    $response->getBody()->write(\json_encode($items));
 
     return $response;
 });
