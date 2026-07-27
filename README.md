@@ -41,3 +41,6 @@ Tworzymy compose.override.yml na wzór compose.override.yml.example.
 Następnie `docker compose up -d`.
 
 Od tego momendu możemy edytować pliki backendowe, w trakcie dzialania dockera.
+
+
+@todo dokumentacja jest zdezaktualizowana

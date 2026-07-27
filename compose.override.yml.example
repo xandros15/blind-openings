@@ -6,8 +6,11 @@ services:
     ports:
       - "3306:3306"
   panel-php:
+    environment:
+      API_IMAGES: ${API_IMAGES}
     volumes:
       - ./themes:/app
+      - ./image:/image
   panel-db:
     ports:
       - "3307:3306"

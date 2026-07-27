@@ -129,7 +129,7 @@ async function downloadListsFromForm() {
             <div class="card">
               <div class="card-image">
                 <figure class="image">
-                  <img :src="theme.image" alt="Placeholder image"/>
+                  <img :src="`/images/${theme.id}.webp`" alt="Placeholder image"/>
                 </figure>
               </div>
               <div class="card-content">

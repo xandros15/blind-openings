@@ -107,7 +107,6 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
             t.name, 
             t.paths, 
             GROUP_CONCAT(ta.account_name, ',') AS accountNames, 
-            MAX(a.image) image,
             t.year
         FROM theme t
         JOIN resource r on t.id = r.theme_id

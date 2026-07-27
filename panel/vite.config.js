@@ -20,6 +20,11 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api/, ""),
           changeOrigin: true,
         },
+        "/images": {
+          target: env.VITE_PANEL_IMAGES_URL,
+          rewrite: (path) => path.replace(/^\/images/, ""),
+          changeOrigin: true,
+        }
       },
     },
   };

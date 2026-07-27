@@ -16,6 +16,13 @@
 
     handle_path /videos/* {
         root /videos
+        @assets path *.webm
+        header @assets expires 14d
+        file_server browse
+    }
+
+    handle_path /images/* {
+        root /images
         @assets path *.webp
         header @assets expires 14d
         file_server browse

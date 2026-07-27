@@ -55,6 +55,7 @@ services:
       - "2138:80"
     volumes:
       - "${VIDEO_DIR}:/videos:ro"
+      - "${IMAGE_DIR}:/images:ro"
 volumes:
   db_data:
   panel_db_data:
