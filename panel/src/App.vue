@@ -84,7 +84,7 @@ async function downloadListsFromForm() {
       <h1 class="title is-size-1">Panel</h1>
       <div class="box" v-if="chooseTheme">
         <h2 class="title is-size-2">Wideo {{ chooseTheme.name }} {{ /OP\d+(?:v\d+)?/.exec(chooseTheme.path)?.[0] }}</h2>
-        <video controls muted>
+        <video controls muted :key="chooseTheme.path">
           <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
           Twoja przeglądarka nie obsługuje elementu video.
         </video>
@@ -102,7 +102,14 @@ async function downloadListsFromForm() {
               <div class="card-content">
                 <div class="media">
                   <div class="media-content">
-                    <p class="title is-4">{{ theme.name }}</p>
+                    <p class="title is-4">
+                      <a v-if="theme.url" target="_blank" :href="theme.url">
+                        {{ theme.name }}
+                      </a>
+                      <template v-else>
+                        {{ theme.name}}
+                      </template>
+                    </p>
                     <p class="subtitle is-6">{{ theme.year }}</p>
                   </div>
                 </div>
