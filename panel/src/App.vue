@@ -9,6 +9,7 @@ const chooseTeam = ref(null)
 const chooseAccount = ref(null)
 const chooseTheme = ref(null)
 const loading = ref(false)
+const showLeftPanel = ref(true)
 
 fetch('/api/teams').then(async r => {
   if (r.ok) {
@@ -26,6 +27,7 @@ function nextRound() {
   chooseTeam.value = null
   chooseAccount.value = null
   chooseTheme.value = null
+  showLeftPanel.value = true
 }
 
 function reshuffle(theme, index) {
@@ -103,95 +105,128 @@ async function downloadListsFromForm() {
 </script>
 
 <template>
-  <div class="section">
-    <div class="container">
-      <h1 class="title is-size-1">Panel</h1>
-      <div class="box">
-        <h2 class="title is-size-2">Wyświetlone/Przelosowane</h2>
-        <div class="tag large mb-2 is-size-5 is-block is-warning" v-for="theme in doneThemes" :key="theme.id">
-          {{ theme.name }}
-        </div>
-      </div>
-      <div class="box" v-if="chooseTheme">
-        <h2 class="title is-size-2">Wideo {{ chooseTheme.name }} {{ /OP\d+(?:v\d+)?/.exec(chooseTheme.path)?.[0] }}</h2>
-        <video controls muted :key="chooseTheme.path">
-          <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
-          Twoja przeglądarka nie obsługuje elementu video.
-        </video>
-        <div class="buttons">
-          <button class="button is-success" @click="nextRound()">Następna runda</button>
-        </div>
-      </div>
-      <div class="box" v-if="rolledThemes.length > 0">
-        <h2 class="title is-size-2">Wybierz opening</h2>
-        <h3 class="subtitle is-3">(Wylosowano z {{teamThemes.length}} openingów)</h3>
-        <div class="columns">
-          <div class="column" v-for="(theme, index) in rolledThemes" :key="theme.id">
-            <div class="card">
-              <div class="card-image">
-                <figure class="image">
-                  <img :src="`/images/${theme.id}.webp`" alt="Placeholder image"/>
-                </figure>
+  <div class="buttons is-position-fixed p-2">
+    <button v-if="showLeftPanel" class="button is-small" @click.prevent="showLeftPanel = false">
+      Ukryj
+    </button>
+    <button v-else class="button is-small" @click.prevent="showLeftPanel = true">
+      Pokaż
+    </button>
+  </div>
+  <div class="columns is-gapless pt-6">
+    <div class="column is-3" v-if="showLeftPanel">
+      <aside class="p-4">
+        <div class="content">
+          <div v-if="rolledThemes.length > 0 && !chooseTheme" class="">
+            <h2 class="title is-size-4">Wyświetlone/Przelosowane</h2>
+            <div class="" v-for="theme in doneThemes" :key="theme.id">
+              <div class="tag large is-clipped is-warning is-size-5 mb-2 is-block is-warning" :title="theme.name">
+                {{ theme.name }}
               </div>
-              <div class="card-content">
-                <div class="media">
-                  <div class="media-content">
-                    <div class="tags">
-                      <a :href="resource.link" target="_blank" rel="nofollow" class="tag is-link"
-                         v-for="resource in theme.resources" :key="resource.link">
-                        {{ resource.site }}
-                      </a>
-                    </div>
-                    <p class="title is-4">
-                        {{ theme.name }}
-                    </p>
-                    <p class="subtitle is-6">{{ theme.year }}</p>
-                    <button class="button is-warning" @click.prevent="reshuffle(theme, index)">Przelosuj</button>
-                  </div>
+            </div>
+          </div>
+          <div v-else>
+            <div v-for="team in teams" :key="team.id">
+              <div class="mb-1 is-flex is-justify-content-space-between">
+                <div>
+                  <span class="title is-size-5">{{ team.team_name }}</span>
                 </div>
                 <div class="buttons">
-                  <button v-for="videoPath in theme.paths" @click.prevent="selectVideo(theme, videoPath)"
-                          class="button is-success" :key="videoPath">
-                    {{ /OP\d+(?:v\d+)?/.exec(videoPath)?.[0] }}
-                  </button>
+                  <button class="button is-small is-success" @click.prevent="switchTeam(team)">Wybierz</button>
+                </div>
+              </div>
+              <div class="mb-2" style="text-align: right" v-for="list in team.lists" :key="list.id">
+                <b class="mr-2">{{ list.account_name }}</b>
+                <span class="tag is-info">{{ list.service }}</span>
+              </div>
+            </div>
+            <hr>
+            <div class="buttons">
+              <button class="button is-success" :class="{'is-loading': loading}" @click.prevent="downloadListsFromForm"
+                      :disabled="loading">
+                Pobierz listy z formularza
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="column" :class="{'is-9': showLeftPanel}">
+      <div class="p-3">
+        <div class="box" v-if="chooseTheme">
+          <h2 class="title is-size-2 has-text-centered">{{ chooseTheme.name }}
+            <button class="button is-danger is-small is-float-right" @click.prevent="chooseTheme = null">wróć</button>
+          </h2>
+          <video controls muted :key="chooseTheme.path">
+            <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
+            Twoja przeglądarka nie obsługuje elementu video.
+          </video>
+          <div class="buttons">
+            <button class="button is-success" @click.prevent="nextRound()">Następna runda</button>
+          </div>
+        </div>
+        <div class="box" v-else-if="rolledThemes.length > 0">
+          <h2 class="title is-size-2">Wybierz opening
+            <button class="is-small is-danger button is-float-right" @click.prevent="rolledThemes = []">wróć</button>
+          </h2>
+          <h3 class="subtitle is-3">(Wylosowano z {{ teamThemes.length }} openingów)</h3>
+          <div class="columns">
+            <div class="column" v-for="(theme, index) in rolledThemes" :key="theme.id">
+              <div class="card">
+                <div class="card-image">
+                  <figure class="image">
+                    <img :src="`/images/${theme.id}.webp`" alt="Placeholder image"/>
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="media">
+                    <div class="media-content">
+                      <div class="tags">
+                        <a :href="resource.link" target="_blank" rel="nofollow" class="tag is-link"
+                           v-for="resource in theme.resources" :key="resource.link">
+                          {{ resource.site }}
+                        </a>
+                      </div>
+                      <p class="title is-4">
+                        {{ theme.name }}
+                      </p>
+                      <p class="subtitle is-6">{{ theme.year }}</p>
+                      <button class="button is-warning" @click.prevent="reshuffle(theme, index)">Przelosuj</button>
+                    </div>
+                  </div>
+                  <div class="buttons">
+                    <button v-for="videoPath in theme.paths" @click.prevent="selectVideo(theme, videoPath)"
+                            class="button is-success" :key="videoPath">
+                      {{ /OP\d+(?:v\d+)?/.exec(videoPath)?.[0] }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="box" v-if="chooseTeam">
-        <h2 class="title is-size-2">Wybierz uczestnika z {{ chooseTeam.team_name }}</h2>
-        <div class="buttons" v-if="chooseAccount === null">
-          <button @click.prevent="chooseAccount = list.id" class="button is-info" v-for="list in chooseTeam.lists"
-                  :key="list.id">
-            {{ list.account_name }}
-          </button>
+        <div class="box" v-else-if="chooseTeam">
+          <h2 class="title is-size-2">
+            Wybierz uczestnika z {{ chooseTeam.team_name }}
+            <button class="button is-danger is-small is-float-right" @click.prevent="chooseTeam = null">wróć</button>
+          </h2>
+          <div class="buttons" v-if="chooseAccount === null">
+            <button @click.prevent="chooseAccount = list.id" class="button is-info" v-for="list in chooseTeam.lists"
+                    :key="list.id">
+              {{ list.account_name }}
+            </button>
+          </div>
+          <div class="buttons" v-else>
+            <button @click.prevent="chooseAccount = list.id" class="button"
+                    :class="chooseAccount === list.id ? 'is-warning' : 'is-success'" v-for="list in chooseTeam.lists"
+                    :key="list.id">
+              {{ list.account_name }}
+            </button>
+          </div>
+          <div v-if="chooseAccount" class="buttons">
+            <button class="button is-success" @click="rollTheme">Wylosuj</button>
+          </div>
         </div>
-        <div class="buttons" v-else>
-          <button @click.prevent="chooseAccount = list.id" class="button"
-                  :class="chooseAccount === list.id ? 'is-warning' : 'is-success'" v-for="list in chooseTeam.lists"
-                  :key="list.id">
-            {{ list.account_name }}
-          </button>
-        </div>
-        <div v-if="chooseAccount" class="buttons">
-          <button class="button is-success" @click="rollTheme">Wylosuj</button>
-        </div>
-      </div>
-      <div v-for="team in teams" :key="team.id" class="box">
-        <h2 class="title is-size-2">{{ team.team_name }}</h2>
-        <div class="mb-2" v-for="list in team.lists" :key="list.id">
-          <b class="mr-2">{{ list.account_name }}</b>
-          <span class="tag is-info">{{ list.service }}</span>
-        </div>
-        <button class="button is-success" @click.prevent="switchTeam(team)">Wybierz</button>
-      </div>
-      <div class="box">
-        <button class="button is-success" :class="{'is-loading': loading}" @click.prevent="downloadListsFromForm"
-                :disabled="loading">
-          Pobierz listy z formularza
-        </button>
       </div>
     </div>
   </div>
