@@ -78,7 +78,7 @@ async function rollTheme() {
     },
     body: JSON.stringify({
       listIds: chooseTeam.value.lists.filter(l => l.id !== chooseAccount.value).map(l => l.id),
-      excludedIds: [],
+      excludedIds: doneThemes.value.map(dt => parseInt(dt.id)),
     }),
   }).then(r => r.ok ? r.json() : [])
 
