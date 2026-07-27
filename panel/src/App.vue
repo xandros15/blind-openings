@@ -124,6 +124,7 @@ async function downloadListsFromForm() {
       </div>
       <div class="box" v-if="rolledThemes.length > 0">
         <h2 class="title is-size-2">Wybierz opening</h2>
+        <h3 class="subtitle is-3">(Wylosowano z {{teamThemes.length}} openingów)</h3>
         <div class="columns">
           <div class="column" v-for="(theme, index) in rolledThemes" :key="theme.id">
             <div class="card">
