@@ -291,7 +291,7 @@ export const kitsu = async name => {
             .then(handleResponse)
             .then(response => response.data[0].id)
             .catch((error) => {
-                toastr.error('User not found')
+                toastr.error('Nie znaleziono konta')
                 console.error(error)
                 return false
             })
