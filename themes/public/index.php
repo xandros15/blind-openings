@@ -54,14 +54,10 @@ function addAdditionList(Connection $db, array $smallerList, string $teamId, str
         'team_name' => $teamName,
         'account_name' => $additionalList['name'],
         'service' => $additionalList['service'],
-
     ]);
     foreach ($additionalList['items'] as $item) {
         $db->insert('anime', [
             'team_account_id' => $accountId,
-            'url' => $item['url'],
-            'image' => $item['image'] ?? null,
-            'name' => $item['name'],
             'external_id' => (int) $item['id'],
         ]);
     }
@@ -271,9 +267,6 @@ $app->post('/lists', function (Request $request, Response $response) use ($uuid)
             foreach ($animeList as $anime) {
                 $db->insert('anime', [
                     'team_account_id' => $list['id'],
-                    'url' => $anime['url'],
-                    'image' => $anime['image'],
-                    'name' => $anime['name'],
                     'external_id' => $anime['id'],
                 ]);
             }

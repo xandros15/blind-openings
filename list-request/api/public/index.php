@@ -42,17 +42,12 @@ const CREATE_SCHEMA = <<<'JSON'
                                 "items": {
                                     "type": "object",
                                     "properties": {
-                                        "id": {"type": "integer", "minimum": 1, "$error": {"type": "ID musi być liczbą całkowitą", "minimum": "ID musi być większe od zera"}},
-                                        "name": {"type": "string", "minLength": 1, "maxLength": 1024, "$error": {"type": "Nazwa musi być tekstem", "minLength": "Nazwa musi mieć co najmniej 1 znak", "maxLength": "Nazwa może mieć maksymalnie 1024 znaki"}},
-                                        "url": {"type": "string", "format": "uri", "minLength": 1, "maxLength": 128, "$error": {"type": "Pole 'url' musi być tekstem", "format": "Pole 'url' musi być prawidłowym adresem URL", "minLength": "Pole 'url' musi mieć co najmniej 1 znak", "maxLength": "Pole 'url' może mieć maksymalnie 128 znaków"}},
-                                        "image": {"type": "string", "format": "uri", "minLength": 1, "maxLength": 128, "$error": {"type": "Pole 'image' musi być tekstem", "format": "Pole 'image' musi być prawidłowym adresem URL", "minLength": "Pole 'image' musi mieć co najmniej 1 znak", "maxLength": "Pole 'image' może mieć maksymalnie 128 znaków"}}
+                                        "id": {"type": "integer", "minimum": 1, "$error": {"type": "ID musi być liczbą całkowitą", "minimum": "ID musi być większe od zera"}}
                                     },
-                                    "required": ["id", "name", "url"],
+                                    "required": ["id"],
                                     "$error": {
                                         "required": {
-                                            "id": "Pole 'id' jest wymagane",
-                                            "name": "Pole 'name' jest wymagane",
-                                            "url": "Pole 'url' jest wymagane"
+                                            "id": "Pole 'id' jest wymagane"
                                         }
                                     }
                                 }
@@ -211,9 +206,6 @@ $app->post('/lists', function (Request $request, Response $response) {
         foreach ($list['items'] as $item) {
             $db->insert('anime', [
                 'team_account_id' => $accountId,
-                'url' => $item['url'],
-                'image' => $item['image'] ?? null,
-                'name' => $item['name'],
                 'external_id' => (int) $item['id'],
             ]);
         }
@@ -266,10 +258,7 @@ $app->get('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4
     $response = $response->withHeader('Content-Type', 'application/json');
     $db = getDb();
     $query = <<<SQL
-        SELECT 
-            a.url,
-            a.image,
-            a.name,
+        SELECT
             a.external_id AS id,
             ta.service,
             ta.account_name
