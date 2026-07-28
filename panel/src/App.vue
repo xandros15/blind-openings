@@ -83,7 +83,7 @@ async function rollTheme() {
       "Content-Types": 'application/json'
     },
     body: JSON.stringify({
-      listIds: chooseTeam.value.lists.filter(l => l.id !== chooseAccount.value).map(l => l.id),
+      listIds: chooseTeam.value.lists.filter(l => l.id !== chooseAccountId.value).map(l => l.id),
       excludedIds: doneThemes.value.map(dt => parseInt(dt.id)),
     }),
   }).then(r => r.ok ? r.json() : [])
@@ -225,7 +225,7 @@ async function deleteTeamList(teamId, teamListId) {
           <h2 class="title is-size-2">Wybierz opening
             <button class="is-small is-danger button is-float-right" @click.prevent="rolledThemes = []">wróć</button>
           </h2>
-          <h3 class="subtitle is-3">(Wylosowano z {{ teamThemes.length }} openingów)</h3>
+          <h3 class="subtitle is-3">(Wylosowano z {{ teamThemes.length + rolledThemes.length }} openingów)</h3>
           <div class="columns">
             <div class="column" v-for="(theme, index) in rolledThemes" :key="theme.id">
               <div class="card">
