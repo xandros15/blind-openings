@@ -124,7 +124,7 @@ $app->get('/teams', function (Request $request, Response $response) {
     return $response;
 });
 
-$app->delete("/teams/{teamId:{$uuid}}/lists/{listId:{$uuid}}", function (Request $request, Response $response, array $args) {
+$app->delete("/teams/{teamId}/lists/{listId}", function (Request $request, Response $response, array $args) {
     $db = getDb();
     if (!$db->fetchOne('SELECT COUNT(*) FROM team_account WHERE team_id = :teamId AND id = :listId', [
         'teamId' => $args['teamId'],
@@ -136,6 +136,32 @@ $app->delete("/teams/{teamId:{$uuid}}/lists/{listId:{$uuid}}", function (Request
     $db->delete('team_account', [
         'team_id' => $args['teamId'],
         'id' => $args['listId'],
+    ]);
+    return $response->withStatus(204);
+});
+
+$app->delete("/teams/{teamId:{$uuid}", function (Request $request, Response $response, array $args) {
+    $db = getDb();
+    if (!$db->fetchOne('SELECT COUNT(*) FROM team_account WHERE team_id = :teamId', [
+        'teamId' => $args['teamId'],
+    ])) {
+        return $response->withStatus(404);
+    }
+
+    if (isset($_ENV['API_LISTS'])) {
+        $client = new \GuzzleHttp\Client(
+            [
+                'base_uri' => $_ENV['API_LISTS'],
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+            ]
+        );
+        $client->delete('/api/teams/' . $args['teamId']);
+    }
+
+    $db->delete('team_account', [
+        'team_id' => $args['teamId'],
     ]);
     return $response->withStatus(204);
 });
