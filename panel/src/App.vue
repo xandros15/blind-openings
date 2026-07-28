@@ -10,7 +10,7 @@ const rolledThemes = ref([])
 const chooseTeamId = ref(null);
 const chooseTeam = computed(() => chooseTeamId.value ? teams.value.find(t => t.id === chooseTeamId.value) : null)
 const chooseAccountId = ref(null);
-const chooseAccount =  computed(() => chooseTeam.value.lists.find(a => a.id === chooseAccountId.value))
+const chooseAccount = computed(() => chooseTeam.value.lists.find(a => a.id === chooseAccountId.value))
 const chooseTheme = ref(null)
 const loading = ref(false)
 const showLeftPanel = ref(true)
@@ -29,7 +29,7 @@ function nextRound() {
   doneThemes.value.push(Object.assign({}, chooseTheme.value)) //add to excluded
   rolledThemes.value = []
   chooseTeamId.value = null
-  chooseAccount.value = null
+  chooseAccountId.value = null
   chooseTheme.value = null
   showLeftPanel.value = true
 }
@@ -210,10 +210,12 @@ async function deleteTeamList(teamId, teamListId) {
           <h2 class="title is-size-2 has-text-centered">{{ chooseTheme.name }}
             <button class="button is-danger is-small is-float-right" @click.prevent="chooseTheme = null">wróć</button>
           </h2>
-          <video controls muted :key="chooseTheme.path">
-            <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
-            Twoja przeglądarka nie obsługuje elementu video.
-          </video>
+          <div class="is-flex is-justify-content-center mb-2">
+            <video controls muted :key="chooseTheme.path">
+              <source :src="`/videos/${chooseTheme.path}`" type="video/webm">
+              Twoja przeglądarka nie obsługuje elementu video.
+            </video>
+          </div>
           <div class="buttons">
             <button class="button is-success" @click.prevent="nextRound()">Następna runda</button>
           </div>
@@ -320,5 +322,9 @@ async function deleteTeamList(teamId, teamListId) {
 
 .unselected-account {
   transform: scale(.8);
+}
+
+video {
+  max-height: 700px;
 }
 </style>
