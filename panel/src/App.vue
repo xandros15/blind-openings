@@ -18,7 +18,7 @@ fetch('/api/teams').then(async r => {
 })
 
 function switchTeam(team) {
-  chooseTeam.value = team
+  chooseTeam.value = Object.assign({}, team)
 }
 
 function nextRound() {
@@ -132,12 +132,9 @@ async function downloadListsFromForm() {
                   <span class="title is-size-5">{{ team.team_name }}</span>
                 </div>
                 <div class="buttons">
-                  <button class="button is-small is-success" @click.prevent="switchTeam(team)">Wybierz</button>
+                  <button class="button is-small" :class="chooseTeam?.id === team.id ? 'is-warning' : 'is-success'"
+                          @click.prevent="switchTeam(team)">Wybierz</button>
                 </div>
-              </div>
-              <div class="mb-2" style="text-align: right" v-for="list in team.lists" :key="list.id">
-                <b class="mr-2">{{ list.account_name }}</b>
-                <span class="tag is-info">{{ list.service }}</span>
               </div>
             </div>
             <hr>
@@ -165,6 +162,7 @@ async function downloadListsFromForm() {
             <button class="button is-success" @click.prevent="nextRound()">Następna runda</button>
           </div>
         </div>
+
         <div class="box" v-else-if="rolledThemes.length > 0">
           <h2 class="title is-size-2">Wybierz opening
             <button class="is-small is-danger button is-float-right" @click.prevent="rolledThemes = []">wróć</button>
@@ -205,23 +203,40 @@ async function downloadListsFromForm() {
             </div>
           </div>
         </div>
+
         <div class="box" v-else-if="chooseTeam">
           <h2 class="title is-size-2">
             Wybierz uczestnika z {{ chooseTeam.team_name }}
-            <button class="button is-danger is-small is-float-right" @click.prevent="chooseTeam = null">wróć</button>
+            <button class="button is-danger is-small is-float-right" @click.prevent="chooseTeam = []">wróć</button>
           </h2>
-          <div class="buttons" v-if="chooseAccount === null">
-            <button @click.prevent="chooseAccount = list.id" class="button is-info" v-for="list in chooseTeam.lists"
-                    :key="list.id">
-              {{ list.account_name }}
-            </button>
-          </div>
-          <div class="buttons" v-else>
-            <button @click.prevent="chooseAccount = list.id" class="button"
-                    :class="chooseAccount === list.id ? 'is-warning' : 'is-success'" v-for="list in chooseTeam.lists"
-                    :key="list.id">
-              {{ list.account_name }}
-            </button>
+
+          <div class="fixed-grid has-4-cols">
+
+            <div class="grid">
+              <div class="cell" v-for="list in chooseTeam.lists" :key="list.id">
+                <div class="card account"
+                     :class="chooseAccount === null ? '' : chooseAccount === list.id ? 'selected-account' : 'unselected-account'">
+                  <div class="card-header">
+                    <div class="card-header-title">
+                      <div>
+                        <p class="title">{{ list.account_name }}</p>
+                        <p class="subtitle">{{ list.openingsCount}} openingów</p>
+                      </div>
+                    </div>
+                    <div class="card-header-icon">
+                      <span class="tag is-info">
+                        {{ list.service }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="card-footer">
+                    <button class="card-footer-item button" :class="chooseAccount === list.id ? 'is-warning' : ''" @click.prevent="chooseAccount = list.id">
+                      Wybierz
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div v-if="chooseAccount" class="buttons">
             <button class="button is-success" @click="rollTheme">Wylosuj</button>
@@ -232,4 +247,17 @@ async function downloadListsFromForm() {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.account {
+  transition: transform .3s;
+  transform: scale(.9);
+}
+
+.selected-account {
+  transform: scale(1);
+}
+
+.unselected-account {
+  transform: scale(.8);
+}
+</style>

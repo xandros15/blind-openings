@@ -35,14 +35,17 @@ $app->get('/teams', function (Request $request, Response $response) {
     $db = getDb();
 
     $query = <<<SQL
-        SELECT DISTINCT 
+        SELECT 
             ta.id,
             ta.team_id,
             ta.team_name, 
             ta.account_name, 
-            ta.service
+            ta.service,
+            COUNT(r.external_id) openingsCount
         FROM team_account ta
         JOIN anime a on ta.id = a.team_account_id
+        JOIN resource r on r.external_id = a.external_id AND r.site = ta.service
+        GROUP BY ta.id
     SQL;
     $lists = $db->fetchAllAssociative($query);
     $grouped = [];
@@ -58,6 +61,7 @@ $app->get('/teams', function (Request $request, Response $response) {
             'id' => $list['id'],
             'account_name' => $list['account_name'],
             'service' => $list['service'],
+            'openingsCount' => $list['openingsCount'],
         ];
     }
     $grouped = array_values($grouped);
