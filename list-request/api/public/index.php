@@ -16,7 +16,6 @@ ini_set('display_errors', '0');
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-const MIN_LIST_LENGTH = 100;
 const CREATE_SCHEMA = <<<'JSON'
        {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
