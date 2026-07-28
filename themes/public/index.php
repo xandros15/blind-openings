@@ -2,24 +2,33 @@
 
 declare(strict_types=1);
 
+ini_set('display_errors', '0');
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Ramsey\Uuid\Uuid;
+use Slim\Error\Renderers\JsonErrorRenderer;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 
+const MIN_LIST_LENGTH = 100;
 $uuid = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}';
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
+$app->addRoutingMiddleware();
+$errorMiddleware = $app->addErrorMiddleware(false, true, true);
+$errorMiddleware->getDefaultErrorHandler()->setDefaultErrorRenderer('application/json', JsonErrorRenderer::class);
 $app->get('/', function (Request $request, Response $response) {
     $response->getBody()->write('Hello world!');
     return $response;
 });
 
-function getDb(): \Doctrine\DBAL\Connection
+function getDb(): Connection
 {
     return DriverManager::getConnection([
         'dbname' => $_ENV['DB_NAME'] ?? null,
@@ -28,6 +37,55 @@ function getDb(): \Doctrine\DBAL\Connection
         'host' => $_ENV['DB_HOST'] ?? null,
         'driver' => 'pdo_mysql',
     ]);
+}
+
+function addAdditionList(Connection $db, array $smallerList, string $teamId, string $teamName): void
+{
+    if (count($smallerList['items']) >= MIN_LIST_LENGTH) {
+        return;
+    }
+
+    $additionalList = getRandomAnimeList($smallerList['service'], array_map(static fn(array $listItem) => (int) $listItem['id'], $smallerList['items']));
+
+    $accountId = Uuid::uuid7();
+    $db->insert('team_account', [
+        'id' => $accountId,
+        'team_id' => $teamId,
+        'team_name' => $teamName,
+        'account_name' => $additionalList['name'],
+        'service' => $additionalList['service'],
+
+    ]);
+    foreach ($additionalList['items'] as $item) {
+        $db->insert('anime', [
+            'team_account_id' => $accountId,
+            'url' => $item['url'],
+            'image' => $item['image'] ?? null,
+            'name' => $item['name'],
+            'external_id' => (int) $item['id'],
+        ]);
+    }
+}
+
+function getRandomAnimeList(string $service, array $exclude): array
+{
+    $count = count($exclude);
+    $lists = [
+        'mal' => ['xandros.json', 'wizio.json'],
+        'anilist' => ['darthmiki.json'],
+        'kitsu' => ['otoshigami.json'],
+    ];
+
+    $from = $lists[$service] ?? array_merge(...$lists);
+    $listName = $from[random_int(0, count($from) - 1)];
+    $list = json_decode(file_get_contents(__DIR__ . '/../predefinied/' . $listName), true);
+    $list['items'] = array_filter($list['items'], static fn(array $item) => !in_array($item['id'], $exclude));
+    for ($i = 0; $i < 5; $i++) {
+        shuffle($list['items']);
+    }
+    $list['items'] = array_slice($list['items'], 0, MIN_LIST_LENGTH - $count);
+
+    return $list;
 }
 
 $app->get('/teams', function (Request $request, Response $response) {
@@ -146,7 +204,7 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
     $forGroup = $db->fetchAllAssociative($queryIndexed, [
         'ids' => $indexes,
     ], ['ids' => ArrayParameterType::INTEGER]);
-    foreach($forGroup as $item){
+    foreach ($forGroup as $item) {
         $grouped[$item['theme_id']][] = $item;
     }
 
@@ -193,7 +251,9 @@ $app->post('/lists', function (Request $request, Response $response) use ($uuid)
     );
     $db = getDb();
     $db->delete('team_account');
+
     foreach ($teams as $team) {
+        $smallest = null;
         $db->beginTransaction();
         foreach ($team['lists'] as $list) {
             $db->insert('team_account', [
@@ -217,7 +277,18 @@ $app->post('/lists', function (Request $request, Response $response) use ($uuid)
                     'external_id' => $anime['id'],
                 ]);
             }
+            if ($smallest === null) {
+                $smallest = ['items' => $animeList, 'service' => $list['service']];
+            } elseif (count($animeList) < count($smallest)) {
+                $smallest = ['items' => $animeList, 'service' => $list['service']];
+            }
         }
+        addAdditionList(
+            db: $db,
+            smallerList: $smallest,
+            teamId: $team['id'],
+            teamName: $team['team_name'],
+        );
         $db->commit();
     }
 
@@ -239,6 +310,5 @@ $app->addMiddleware(
     }
 );
 
-$app->addErrorMiddleware(true, true, true);
 $app->setBasePath('/api');
 $app->run();
