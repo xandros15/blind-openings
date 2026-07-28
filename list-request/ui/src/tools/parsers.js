@@ -20,6 +20,11 @@ function decompressGzip(file) {
 export const malApi = async name => {
     const url = '/api/mal/' + encodeURIComponent(name)
     const items = await fetch(url).then(r => {
+        if (r.status === 404) {
+            toastr.error('Nie znaleziono konta')
+            return false
+        }
+
         if (!r.ok) {
             toastr.error('Błąd przy dodawaniu listy')
             return false
@@ -136,6 +141,10 @@ fragment mediaListEntry on MediaList {
         .catch(handleError)
 
     function handleResponse(response) {
+        if (response.status === 404) {
+            throw 'Nie znaleziono konta.';
+        }
+
         return response.json().then(function (json) {
             return response.ok ? json : Promise.reject(json)
         })
