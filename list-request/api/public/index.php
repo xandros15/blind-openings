@@ -9,10 +9,14 @@ use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Helper;
 use Opis\JsonSchema\Validator;
 use Ramsey\Uuid\Uuid;
+use Slim\Error\Renderers\JsonErrorRenderer;
 use Slim\Factory\AppFactory;
+
+ini_set('display_errors', '0');
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+const MIN_LIST_LENGTH = 100;
 const CREATE_SCHEMA = <<<'JSON'
        {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -23,6 +27,9 @@ const CREATE_SCHEMA = <<<'JSON'
                 "name": {"type": "string", "minLength": 3, "maxLength": 64, "$error": {"type": "Pole 'name' musi być tekstem", "minLength": "Pole 'name' musi mieć co najmniej 3 znaki", "maxLength": "Pole 'name' może mieć maksymalnie 64 znaki"}},
                 "lists": {
                     "type": "array",
+                    "minItems": 2,
+                    "maxItems": 10,
+                    "$error": {"type":  "Pole `lists` musi być tablicą", "minItems": "Za mało elementów w tablicy `lists`", "maxItems": "Za dużo elementów w tablicy `lists`"},
                     "items": {
                         "type": "object",
                         "properties": {
@@ -30,6 +37,9 @@ const CREATE_SCHEMA = <<<'JSON'
                             "name": {"type": "string", "minLength": 1, "maxLength": 64, "$error": {"type": "Nazwa listy musi być tekstem", "minLength": "Nazwa listy musi mieć co najmniej 1 znak", "maxLength": "Nazwa listy może mieć maksymalnie 64 znaki"}},
                             "items": {
                                 "type": "array",
+                                "$error": {"type":  "Pole `items` musi być tablicą", "minItems": "Za mało elementów w tablicy `items`", "maxItems": "Za dużo elementów w tablicy `items`"},
+                                "minItems": 1,
+                                "maxItems": 30000,
                                 "items": {
                                     "type": "object",
                                     "properties": {
@@ -72,6 +82,9 @@ const CREATE_SCHEMA = <<<'JSON'
 
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
+$app->addRoutingMiddleware();
+$errorMiddleware = $app->addErrorMiddleware(false, true, true);
+$errorMiddleware->getDefaultErrorHandler()->setDefaultErrorRenderer('application/json', JsonErrorRenderer::class);
 $app->get('/', function (Request $request, Response $response) {
     $response->getBody()->write('Hello world!');
     return $response;
@@ -207,7 +220,7 @@ $app->post('/lists', function (Request $request, Response $response) {
         }
     }
     $db->commit();
-    $response->getBody()->write(\json_encode(['id' => $team['name']]));
+    $response->getBody()->write(\json_encode(['id' => $teamId]));
 
     return $response->withStatus(201);
 });
@@ -230,7 +243,7 @@ $app->get('/lists', function (Request $request, Response $response) {
     $lists = $db->fetchAllAssociative($query);
     $grouped = [];
     foreach ($lists as $list) {
-        if(!isset($grouped[$list['team_id']])){
+        if (!isset($grouped[$list['team_id']])) {
             $grouped[$list['team_id']] = [
                 'id' => $list['team_id'],
                 'team_name' => $list['team_name'],
@@ -296,6 +309,6 @@ $app->addMiddleware(
         }
     }
 );
-$app->addErrorMiddleware(true, true, true);
+
 $app->setBasePath('/api');
 $app->run();
