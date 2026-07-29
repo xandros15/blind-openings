@@ -95,7 +95,7 @@ function getDb(): \Doctrine\DBAL\Connection
     ]);
 }
 
-$app->get('/mal/{username:\w+}', function (Request $request, Response $response, $args) {
+$app->get('/mal/{username:.{1,64}}', function (Request $request, Response $response, $args) {
     $response = $response->withHeader('Content-Type', 'application/json');
     $allowedStatuses = [
         'watching',
