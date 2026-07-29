@@ -24,6 +24,11 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_PANEL_IMAGES_URL,
           rewrite: (path) => path.replace(/^\/images/, ""),
           changeOrigin: true,
+        },
+        "/videos": {
+          target: env.VITE_PANEL_VIDEOS_URL,
+          rewrite: (path) => path.replace(/^\/videos/, ""),
+          changeOrigin: true,
         }
       },
     },

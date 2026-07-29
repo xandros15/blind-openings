@@ -11,7 +11,7 @@
     handle_path /api/* {
         root * /app/public
         try_files {path} /index.php
-        php_fastcgi php:9000
+        php_fastcgi form-php:9000
     }
 
     handle {

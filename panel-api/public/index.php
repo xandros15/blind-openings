@@ -148,10 +148,10 @@ $app->delete("/teams/{teamId:{$uuid}", function (Request $request, Response $res
         return $response->withStatus(404);
     }
 
-    if (isset($_ENV['API_LISTS'])) {
+    if (isset($_ENV['FORM_API'])) {
         $client = new \GuzzleHttp\Client(
             [
-                'base_uri' => $_ENV['API_LISTS'],
+                'base_uri' => $_ENV['FORM_API'],
                 'headers' => [
                     'Accept' => 'application/json',
                 ],
@@ -251,16 +251,16 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
 
 
 $app->post('/lists', function (Request $request, Response $response) use ($uuid) {
-    if (!isset($_ENV['API_LISTS'])) {
+    if (!isset($_ENV['FORM_API'])) {
         $response->getBody()->write(\json_encode([
-            'error' => 'Brak zmiennej środowiskowej API_LISTS.',
+            'error' => 'Brak zmiennej środowiskowej FORM_API.',
         ]));
         return $response->withStatus(400);
     }
 
     $client = new \GuzzleHttp\Client(
         [
-            'base_uri' => $_ENV['API_LISTS'],
+            'base_uri' => $_ENV['FORM_API'],
             'headers' => [
                 'Accept' => 'application/json',
             ],

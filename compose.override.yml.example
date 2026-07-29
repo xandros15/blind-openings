@@ -1,15 +1,15 @@
 services:
-  php:
+  form-php:
     volumes:
-      - ./list-request/api:/app
-  db:
+      - ./form-api:/app
+  form-db:
     ports:
       - "3306:3306"
   panel-php:
     environment:
       API_IMAGES: ${API_IMAGES}
     volumes:
-      - ./themes:/app
+      - ./panel-api:/app
       - ./image:/image
   panel-db:
     ports:

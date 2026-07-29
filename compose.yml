@@ -1,25 +1,30 @@
 services:
-  php:
+  form-php:
     restart: always
-    image: docker.box:5000/blind-openings-php:latest
+    image: docker.box:5000/blind-openings-form-php:latest
     environment:
       X_MAL_CLIENT_ID: ${X_MAL_CLIENT_ID}
-      DB_HOST: db
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_NAME: ${DB_NAME}
+      DB_HOST: form-db
+      DB_USER: ${DB_FORM_USER}
+      DB_PASS: ${DB_FORM_PASS}
+      DB_NAME: ${DB_FORM_NAME}
     depends_on:
-      - db
-  db:
+      - form-db
+  form-db:
     restart: always
     image: mariadb:12-noble
     environment:
       MARIADB_RANDOM_ROOT_PASSWORD: true
-      MARIADB_USER: ${DB_USER}
-      MARIADB_PASSWORD: ${DB_PASS}
-      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_FORM_USER}
+      MARIADB_PASSWORD: ${DB_FORM_PASS}
+      MARIADB_DATABASE: ${DB_FORM_NAME}
     volumes:
-      - db_data:/var/lib/mysql
+      - form_db_data:/var/lib/mysql
+  form-web:
+    restart: always
+    image: docker.box:5000/blind-openings-form-web:latest
+    ports:
+      - "${PORT_FORM_WEB}:80"
   panel-php:
     restart: always
     image: docker.box:5000/blind-openings-panel-php:latest
@@ -28,7 +33,7 @@ services:
       DB_USER: ${DB_PANEL_USER}
       DB_PASS: ${DB_PANEL_PASS}
       DB_NAME: ${DB_PANEL_NAME}
-      API_LISTS: ${API_LISTS}
+      FORM_API: ${FORM_API}
     volumes:
       - "${VIDEO_DIR}:/video:ro"
     depends_on:
@@ -43,19 +48,14 @@ services:
       MARIADB_DATABASE: ${DB_PANEL_NAME}
     volumes:
       - panel_db_data:/var/lib/mysql
-  web:
-    restart: always
-    image: docker.box:5000/blind-openings-web:latest
-    ports:
-      - "2137:80"
   panel-web:
     restart: always
     image: docker.box:5000/blind-openings-panel-web:latest
     ports:
-      - "2138:80"
+      - "${PORT_PANEL_WEB}:80"
     volumes:
       - "${VIDEO_DIR}:/videos:ro"
       - "${IMAGE_DIR}:/images:ro"
 volumes:
-  db_data:
+  form_db_data:
   panel_db_data:
