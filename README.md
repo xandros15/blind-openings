@@ -8,7 +8,7 @@ Projekt do prowadzenia ślepych openingów bazując na listach uczestników.
 2. nvm/npm 24 (dev only)
 3. php85 (dev only)
 4. ffmpeg (do przekonwertowania jpg -> webp)
-5. paczke z pobranymi openingami z anime themes
+5. paczke z pobranymi openingami z anime themes (można użyć `make download-videos` - po instalacji)
 6. paczke z pobranymi obrazkami (można użyć `make download-posters` - konfiguracja API IMAGES)
 
 ## Instalacja ##
@@ -58,6 +58,8 @@ przy ustawieniu zmiennych środowiskowych należy pamiętać o wskazaniu pełnyc
 ```
 docker compose up -d
 make migrate-panel && make migrate-form
+make import
+make scan
 ```
 
 ## DEV

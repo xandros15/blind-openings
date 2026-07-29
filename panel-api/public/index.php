@@ -196,7 +196,7 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
         JOIN resource r on t.id = r.theme_id
         JOIN anime a on a.external_id = r.external_id
         JOIN team_account ta on a.team_account_id = ta.id AND ta.service = r.site
-        WHERE ta.id IN (:listIds)
+        WHERE ta.id IN (:listIds) AND t.has_video = 1
     SQL;
     if ($excludedIds !== []) {
         $query .= ' AND t.id NOT IN (:excludeIds)';
