@@ -73,6 +73,7 @@ const CREATE_SCHEMA = <<<'JSON'
             }
         }
     JSON;
+const X_API_KEY = 'X-API-KEY';
 
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
@@ -83,6 +84,18 @@ $app->get('/', function (Request $request, Response $response) {
     $response->getBody()->write('Hello world!');
     return $response;
 });
+
+$guardMiddleware = new class implements \Psr\Http\Server\MiddlewareInterface {
+
+    public function process(\Psr\Http\Message\ServerRequestInterface $request, \Psr\Http\Server\RequestHandlerInterface $handler): \Psr\Http\Message\ResponseInterface
+    {
+        if (!$request->hasHeader(X_API_KEY) || !isset($_ENV['API_KEY']) || !array_any($request->getHeader(X_API_KEY), static fn(string $key) => $key === $_ENV['API_KEY'])) {
+            throw new \Slim\Exception\HttpUnauthorizedException($request);
+        }
+
+        return $handler->handle($request);
+    }
+};
 
 function getDb(): \Doctrine\DBAL\Connection
 {
@@ -159,6 +172,7 @@ $app->get('/mal/{username:.{1,64}}', function (Request $request, Response $respo
 
     return $response->withStatus(200);
 });
+
 $app->post('/lists', function (Request $request, Response $response) {
     $response = $response->withHeader('Content-Type', 'application/json');
     $contents = $request->getBody()->getContents();
@@ -274,7 +288,6 @@ $app->get('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4
     return $response;
 });
 
-
 $app->delete('/teams/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}', function (Request $request, Response $response, $args) {
     $db = getDb();
     $db->delete('team_account', [
@@ -282,7 +295,7 @@ $app->delete('/teams/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F
     ]);
 
     return $response->withStatus(204);
-});
+})->addMiddleware($guardMiddleware);
 
 $app->addMiddleware(
     new class implements \Psr\Http\Server\MiddlewareInterface {

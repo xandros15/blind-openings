@@ -121,12 +121,10 @@ async function deleteTeam(teamId) {
       }
     })
     toastr.success('Usunięto drużynę')
-  } else {
-    const data = await response.json()
-    if (data?.message) {
-      toastr.error(data.message)
-    }
+  } else if (response.status >= 400 && response.status < 500) {
+    toastr.error('Błąd zewnętrznego API. Sprawdź klucze konfiguracyjne.')
   }
+
   loading.value = false
 }
 
@@ -146,10 +144,7 @@ async function deleteTeamList(teamId, teamListId) {
     })
     toastr.success('Usunięto listę')
   } else {
-    const data = await response.json()
-    if (data?.message) {
-      toastr.error(data.message)
-    }
+    toastr.error('Błąd API. Sprawdz logi aplikacji.')
   }
   loading.value = false
 }

@@ -8,6 +8,7 @@ services:
       DB_USER: ${DB_FORM_USER}
       DB_PASS: ${DB_FORM_PASS}
       DB_NAME: ${DB_FORM_NAME}
+      API_KEY: ${API_KEY}
     depends_on:
       - form-db
   form-db:
@@ -34,6 +35,7 @@ services:
       DB_PASS: ${DB_PANEL_PASS}
       DB_NAME: ${DB_PANEL_NAME}
       FORM_API: ${FORM_API}
+      API_KEY: ${API_KEY}
     volumes:
       - "${VIDEO_DIR}:/video:ro"
     depends_on:

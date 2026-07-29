@@ -154,10 +154,19 @@ $app->delete("/teams/{teamId:{$uuid}", function (Request $request, Response $res
                 'base_uri' => $_ENV['FORM_API'],
                 'headers' => [
                     'Accept' => 'application/json',
+                    'X-API-KEY' => $_ENV['API_KEY'] ?? 'empty-key',
                 ],
             ]
         );
-        $client->delete('/api/teams/' . $args['teamId']);
+        try {
+            $client->delete('/api/teams/' . $args['teamId']);
+        } catch (\GuzzleHttp\Exception\ClientException $exception) {
+            if ($exception->getResponse()->getStatusCode() === 401) {
+                return $response->withStatus(403);
+            } else {
+                return $response->withStatus(503);
+            }
+        }
     }
 
     $db->delete('team_account', [
