@@ -52,6 +52,7 @@ przy ustawieniu zmiennych środowiskowych należy pamiętać o wskazaniu pełnyc
 | FORM_API              | panel      | http://form-web                  | adres api do formularza. Potrzebne by z poziomu panelu postawionego na komputerze, móc pobrac listy z formularzy z zewnętrznego hosta. |
 | VIDEO_DIR             | panel      | D:\video                         | lokalizacje do folderu z openingami                                                                                                    |
 | IMAGE_DIR             | panel      | D:\image                         | lokalizacje do folderu z plakatami                                                                                                     |
+| API_KEY               | wszystkie  | lubieogromneplackimaślane        | klucz do komunikacji międzyserwerowej. Losowy ciąg znakóœ                                                                              |
 
 ## Wystartowanie z docker compose + migracja ##
 
