@@ -86,7 +86,7 @@ async function sendTeam() {
         <div class="mb-2">
           <div class="has-text-info">Do wysłania zgłoszenia potrzebujesz minimum 2 uczestników (i nazwy drużyny)</div>
           <button class="is-link button" :class="{'is-loading': loading}"
-                  :disabled="teamMates.length < 1 || teamName.length <= 0 || loading">
+                  :disabled="teamMates.length < 2 || teamName.length <= 0 || loading">
             Zgłoś
           </button>
         </div>
