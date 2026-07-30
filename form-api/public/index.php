@@ -288,6 +288,30 @@ $app->get('/lists/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4
     return $response;
 });
 
+$app->get('/predefined', function (Request $request, Response $response) {
+    $response = $response->withHeader('Content-Type', 'application/json');
+    $lists = array_map(static fn(string $f) => basename($f, '.json'), glob(__DIR__ . '/../predefined/*.json'));
+    $response->getBody()->write(\json_encode($lists));
+
+    return $response->withStatus(200);
+});
+
+$app->get('/predefined/{name}', function (Request $request, Response $response, array $args) {
+    $response = $response->withHeader('Content-Type', 'application/json');
+    $lists = [];
+    foreach (glob(__DIR__ . '/../predefined/*.json') as $file) {
+        $lists[basename($file, '.json')] = $file;
+    }
+
+    if (!isset($lists[$args['name']])) {
+        return $response->withStatus(404);
+    }
+
+    $response->getBody()->write(file_get_contents($lists[$args['name']]));
+
+    return $response->withStatus(200);
+});
+
 $app->delete('/teams/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}', function (Request $request, Response $response, $args) {
     $db = getDb();
     $db->delete('team_account', [

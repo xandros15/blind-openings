@@ -11,6 +11,13 @@ const service = ref(null)
 const file = ref(null)
 const teamMateName = ref('')
 const loading = ref(false)
+const predefined = ref([]);
+
+fetch('/api/predefined').then(async r => {
+  if (r.ok) {
+    predefined.value = await r.json();
+  }
+})
 
 function loadFile(e) {
   const files = e.target.files || e.dataTransfer.files
@@ -27,7 +34,11 @@ async function addTeamMate() {
     } else if (['malApi', 'kitsu', 'anilist'].includes(type) && (typeof data !== 'string' || data.length <= 0)) {
       toastr.warning('Nie została wpisana nazwa konta!')
       return false;
+    } else if (type.split('.')?.[0] === 'predefined' && (typeof data !== 'string' || data.length <= 0)) {
+      toastr.warning('Nie została wpisana ksywa!')
+      return false;
     }
+
     if (type === 'mal') {
       return mal(data)
     }
@@ -42,6 +53,22 @@ async function addTeamMate() {
     }
     if (type === 'anilist') {
       return anilist(data)
+    }
+    if (type.split('.')?.[0] === 'predefined') {
+      return fetch('/api/predefined/' + type.split('.')[1])
+          .then(async r => {
+            if (r.ok) {
+              return await r.json()
+            } else {
+              throw 'Nie udało się załadować predefiniowanej listy'
+            }
+          })
+          .then(r => {
+            r.name = data
+
+            return r;
+          })
+          .catch(e => toastr.error(e))
     }
   }
 
@@ -93,6 +120,7 @@ async function addTeamMate() {
             <option value="kitsu">Kitsu</option>
             <option value="anidb">Anidb</option>
             <option value="mal">MyAnimeList (z pliku)</option>
+            <option v-for="list in predefined" :key="list" :value="`predefined.${list}`">Lista {{ list }}</option>
           </select>
         </div>
       </div>
@@ -101,6 +129,12 @@ async function addTeamMate() {
       <label class="label">Nazwa konta</label>
       <div class="control">
         <input v-model="teamMateName" :disabled="loading" class="input" type="text" placeholder="Nazwa konta" required>
+      </div>
+    </div>
+    <div v-else-if="service?.startsWith('predefine')" class="field">
+      <label class="label">Ksywa</label>
+      <div class="control">
+        <input v-model="teamMateName" :disabled="loading" class="input" type="text" placeholder="Ksywa" required>
       </div>
     </div>
     <div v-if="['anidb', 'mal'].includes(service)" class="file">
