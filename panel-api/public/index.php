@@ -74,7 +74,7 @@ function getRandomAnimeList(string $service, array $exclude): array
 
     $from = $lists[$service] ?? array_merge(...$lists);
     $listName = $from[random_int(0, count($from) - 1)];
-    $list = json_decode(file_get_contents(__DIR__ . '/../predefinied/' . $listName), true);
+    $list = json_decode(file_get_contents(__DIR__ . '/../predefined/' . $listName), true);
     $list['items'] = array_filter($list['items'], static fn(array $item) => !in_array($item['id'], $exclude));
     for ($i = 0; $i < 5; $i++) {
         shuffle($list['items']);
