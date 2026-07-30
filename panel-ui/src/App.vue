@@ -5,6 +5,8 @@ import Notifications from "@/Notifications.vue";
 
 const teams = ref([])
 const doneThemes = ref([])
+const doneSearch = ref('')
+const doneFiltered = computed(() => doneSearch.value.length > 2 ? doneThemes.value.filter(r => r.name.toLowerCase().includes(doneSearch.value.toLowerCase())) : doneThemes.value);
 const teamThemes = ref([])
 const rolledThemes = ref([])
 const chooseTeamId = ref(null);
@@ -14,6 +16,8 @@ const chooseAccount = computed(() => chooseTeam.value.lists.find(a => a.id === c
 const chooseTheme = ref(null)
 const loading = ref(false)
 const showLeftPanel = ref(true)
+
+loadState();
 
 fetch('/api/teams').then(async r => {
   if (r.ok) {
@@ -32,10 +36,12 @@ function nextRound() {
   chooseAccountId.value = null
   chooseTheme.value = null
   showLeftPanel.value = true
+  saveState()
 }
 
 function reshuffle(theme, index) {
   doneThemes.value.push(Object.assign({}, theme)) //add to excluded
+  saveState()
   const rolled = getRandom(teamThemes.value)?.[0]
   if (rolled) {
     teamThemes.value = teamThemes.value.filter(tt => rolled?.id !== tt.id) //remove new roll from list
@@ -149,6 +155,23 @@ async function deleteTeamList(teamId, teamListId) {
   loading.value = false
 }
 
+function cleanDoneThemes() {
+  doneThemes.value = []
+  saveState()
+}
+
+function saveState() {
+  localStorage.setItem('doneThemes', JSON.stringify(doneThemes.value));
+
+}
+
+function loadState() {
+  const data = JSON.parse(localStorage.getItem('doneThemes') ?? '[]');
+  if (Array.isArray(data)) {
+    doneThemes.value = data
+  }
+}
+
 </script>
 
 <template>
@@ -167,18 +190,24 @@ async function deleteTeamList(teamId, teamListId) {
         <div class="content">
           <div v-if="rolledThemes.length > 0 && !chooseTheme" class="">
             <h2 class="title is-size-4">Wyświetlone/Przelosowane</h2>
-            <div class="" v-for="theme in doneThemes" :key="theme.id">
-              <div class="tag large is-clipped is-warning is-size-5 mb-2 is-block is-warning" :title="theme.name">
-                {{ theme.name }}
+            <input class="input mb-4" type="text" v-model="doneSearch" placeholder="Wyszukaj"/>
+            <div class="mb-4">
+              <div v-for="(theme, idx) in doneFiltered" :key="theme.id">
+                <div class="tag large is-clipped is-warning is-size-5 mb-2 is-block is-warning" :title="theme.name">
+                  {{idx + 1}}. {{ theme.name }}
+                </div>
               </div>
+            </div>
+            <div class="buttons">
+              <button class="button is-danger is-small" @click="cleanDoneThemes">Wyczyść</button>
             </div>
           </div>
           <div v-else>
-            <div v-for="team in teams" :key="team.id">
+            <div v-for="(team, idx) in teams" :key="team.id">
               <div class="mb-1 is-flex is-justify-content-space-between">
                 <div>
-                  <button class="button is-danger is-small mr-2 bold" @click.prevent="deleteTeam(team.id)">x</button>
-                  <span class="title is-size-5">{{ team.team_name }}</span>
+                  <button class="button is-danger is-small mr-2 bold" @click.prevent="deleteTeam(team.id)">Usuń</button>
+                  <span class="title is-size-5">{{idx + 1}}. {{ team.team_name }}</span>
                 </div>
                 <div class="buttons">
                   <button class="button is-small"
@@ -288,7 +317,7 @@ async function deleteTeamList(teamId, teamListId) {
                     </div>
                     <div class="card-header-icon">
                       <button @click.prevent="deleteTeamList(chooseTeam.id, list.id)" class="button is-danger is-small">
-                        x
+                        usuń
                       </button>
                     </div>
                   </div>
