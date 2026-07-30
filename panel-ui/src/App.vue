@@ -232,23 +232,29 @@ async function deleteTeamList(teamId, teamListId) {
                 <div class="card-content">
                   <div class="media">
                     <div class="media-content">
-                      <div class="tags">
-                        <a :href="resource.link" target="_blank" rel="nofollow" class="tag is-link"
-                           v-for="resource in theme.resources" :key="resource.link">
-                          {{ resource.site }}
-                        </a>
+                      <div class="is-flex is-justify-content-space-between">
+                        <div class="tags">
+                          <a :href="resource.link" target="_blank" rel="nofollow" class="tag is-link"
+                             v-for="resource in theme.resources" :key="resource.link">
+                            {{ resource.site }}
+                          </a>
+                        </div>
+                        <div>
+                          <button class="tag button is-warning is-small" @click.prevent="reshuffle(theme, index)">
+                            Przelosuj
+                          </button>
+                        </div>
                       </div>
                       <p class="title is-4">
                         {{ theme.name }}
                       </p>
                       <p class="subtitle is-6">{{ theme.year }}</p>
-                      <button class="button is-warning" @click.prevent="reshuffle(theme, index)">Przelosuj</button>
                     </div>
                   </div>
                   <div class="buttons">
                     <button v-for="videoPath in theme.paths" @click.prevent="selectVideo(theme, videoPath)"
                             class="button is-success" :key="videoPath">
-                      {{ /OP\d+(?:v\d+)?/.exec(videoPath)?.[0] }}
+                      {{ /OP\d+(?:v\d+)?(?:\-NCBD)?(?:\-NCDVD)?(?:\-Lyrics)?/i.exec(videoPath)?.[0] }}
                     </button>
                   </div>
                 </div>
