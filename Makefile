@@ -24,13 +24,10 @@ migrate-form:
 	docker compose exec form-php php /app/vendor/bin/doctrine-migrations migrate -n
 
 import:
-	docker compose exec panel php /app/bin/import.php
-
-scan:
-	docker compose exec panel php /app/bin/scan.php
+	docker compose exec panel-php php /app/bin/import.php
 
 fetch:
-	docker compose exec panel php /app/bin/fetch.php
+	docker compose exec panel-php php /app/bin/fetch.php
 
 download-posters:
 	@DB_HOST=$(DB_PANEL_HOST) \

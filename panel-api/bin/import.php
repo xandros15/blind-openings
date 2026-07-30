@@ -32,12 +32,18 @@ foreach (glob(__DIR__ . '/../data/*.json') as $filename) {
         if ($theme['openings'] === []) {
             continue;
         }
+        $availablePaths = [];
+        foreach ($theme['openings'] as $path) {
+            if (file_exists('/video/' . $path)) {
+                $availablePaths[] = $path;
+            }
+        }
         $db->insert('theme', [
             'id' => $theme['id'],
             'name' => $theme['title'],
             'year' => $theme['year'],
-            'paths' => implode(',', $theme['openings']),
-            'has_video' => 0,
+            'paths' =>  $availablePaths !== [] ? implode(',', $availablePaths) : null,
+            'has_video' => $availablePaths !== [] ? 1 : 0,
         ]);
         foreach ($theme['resources'] as $service => $externalIds) {
             foreach ($externalIds as $externalId) {

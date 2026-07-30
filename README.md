@@ -60,7 +60,6 @@ przy ustawieniu zmiennych środowiskowych należy pamiętać o wskazaniu pełnyc
 docker compose up -d
 make migrate-panel && make migrate-form
 make import
-make scan
 ```
 
 ## DEV
