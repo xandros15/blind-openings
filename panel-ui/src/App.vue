@@ -16,6 +16,7 @@ const chooseAccount = computed(() => chooseTeam.value.lists.find(a => a.id === c
 const chooseTheme = ref(null)
 const loading = ref(false)
 const showLeftPanel = ref(true)
+const spoilerList = ref(false)
 
 loadState();
 
@@ -194,7 +195,7 @@ function loadState() {
             <div class="mb-4">
               <div v-for="(theme, idx) in doneFiltered" :key="theme.id">
                 <div class="tag large is-clipped is-warning is-size-5 mb-2 is-block is-warning" :title="theme.name">
-                  {{idx + 1}}. {{ theme.name }}
+                  {{ idx + 1 }}. {{ theme.name }}
                 </div>
               </div>
             </div>
@@ -207,7 +208,7 @@ function loadState() {
               <div class="mb-1 is-flex is-justify-content-space-between">
                 <div>
                   <button class="button is-danger is-small mr-2 bold" @click.prevent="deleteTeam(team.id)">Usuń</button>
-                  <span class="title is-size-5">{{idx + 1}}. {{ team.team_name }}</span>
+                  <span class="title is-size-5">{{ idx + 1 }}. {{ team.team_name }}</span>
                 </div>
                 <div class="buttons">
                   <button class="button is-small"
@@ -231,9 +232,26 @@ function loadState() {
     <div class="column" :class="{'is-9': showLeftPanel}">
       <div class="p-3">
         <div class="box" v-if="chooseTheme">
-          <h2 class="title is-size-2 has-text-centered">{{ chooseTheme.name }}
-            <button class="button is-danger is-small is-float-right" @click.prevent="chooseTheme = null">wróć</button>
-          </h2>
+          <div class="columns">
+            <div class="column is-2">
+              <div class="tags" v-if="spoilerList" @click.prevent="spoilerList = false">
+                <span class="tag is-danger is-small" v-for="(account, idx) in chooseTheme.accountNames" :key="idx">
+                  {{ account }}
+                </span>
+              </div>
+              <div v-else class="buttons"><button class="is-small button" @click.prevent="spoilerList = true">Accounts</button></div>
+            </div>
+            <div class="column is-8">
+              <h2 class="title is-size-2 has-text-centered column">
+                {{ chooseTheme.name }}
+              </h2>
+            </div>
+            <div class="column is-2 is-flex is-justify-content-end">
+              <div class="buttons">
+                <button class="button is-danger is-small" @click.prevent="chooseTheme = null">wróć</button>
+              </div>
+            </div>
+          </div>
           <div class="is-flex is-justify-content-center mb-2">
             <video controls muted :key="chooseTheme.path">
               <source :src="`/videos/${chooseTheme.path}`" type="video/webm">

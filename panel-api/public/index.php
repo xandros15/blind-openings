@@ -242,7 +242,7 @@ $app->post("/find-themes", function (Request $request, Response $response) use (
     $items = array_map(static fn(array $theme) => [
         ...$theme,
         'paths' => explode(',', $theme['paths']),
-        'accountNames' => explode(',', $theme['accountNames']),
+        'accountNames' => explode(',', $theme['accountNames']) |> array_unique(...) |> array_filter(...) |> array_values(...),
         'resources' => array_map(static fn(array $resource) => [
             'site' => strtolower($resource['site']),
             'link' => match (strtolower($resource['site'])) {
