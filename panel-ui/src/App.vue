@@ -33,10 +33,10 @@ function switchTeam(team) {
 function nextRound() {
   doneThemes.value.push(Object.assign({}, chooseTheme.value)) //add to excluded
   rolledThemes.value = []
-  chooseTeamId.value = null
   chooseAccountId.value = null
   chooseTheme.value = null
   showLeftPanel.value = true
+  nextTeam()
   saveState()
 }
 
@@ -173,6 +173,22 @@ function loadState() {
   }
 }
 
+function nextTeam() {
+  if (chooseTeamId.value === null) {
+    return;
+  }
+
+  const currentIndex = teams.value.findIndex(t => t.id === chooseTeamId.value);
+  if (currentIndex === -1) {
+    chooseTeamId.value = null;
+
+    return;
+  }
+
+  const nextTeam = teams.value[currentIndex + 1] || teams.value[0];
+  switchTeam(nextTeam);
+}
+
 </script>
 
 <template>
@@ -239,7 +255,9 @@ function loadState() {
                   {{ account }}
                 </span>
               </div>
-              <div v-else class="buttons"><button class="is-small button" @click.prevent="spoilerList = true">Accounts</button></div>
+              <div v-else class="buttons">
+                <button class="is-small button" @click.prevent="spoilerList = true">Accounts</button>
+              </div>
             </div>
             <div class="column is-8">
               <h2 class="title is-size-2 has-text-centered column">
