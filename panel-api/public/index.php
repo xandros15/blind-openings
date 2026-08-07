@@ -307,7 +307,7 @@ $app->post('/lists', function (Request $request, Response $response) use ($uuid)
             }
             if ($smallest === null) {
                 $smallest = ['items' => $animeList, 'service' => $list['service']];
-            } elseif (count($animeList) < count($smallest)) {
+            } elseif (count($animeList) < count($smallest['items'])) {
                 $smallest = ['items' => $animeList, 'service' => $list['service']];
             }
         }
