@@ -5,6 +5,7 @@
         "ramsey/uuid": "^4.9",
         "doctrine/migrations": "^3.9",
         "opis/json-schema": "^2.6",
-        "doctrine/dbal": "^4.4"
+        "doctrine/dbal": "^4.4",
+        "ext-curl": "*"
     }
 }
